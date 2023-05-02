@@ -228,9 +228,7 @@ workflow {
 
     infiles_ch = Channel.fromPath(input_files)
 
-    Channel
-        .fromFilePairs(input_files, checkIfExists: true)
-        .set { read_pairs_ch }
+    read_pairs_ch = Channel.fromFilePairs(input_files, checkIfExists: true)
 
     trim_ch = TRIMMOMATIC(read_pairs_ch)
 
