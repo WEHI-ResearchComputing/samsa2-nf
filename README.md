@@ -51,7 +51,7 @@ nextflow run samsa2-master.nf
 ### Parameters
 
 ```
-nextfow run samsa2-master.nf
+nextflow run samsa2-master.nf
   --input_files <directory with pairs of reads>
   --python_scripts <directory with python scripts>
   --diamond_database <path to RefSeq db>
