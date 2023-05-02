@@ -22,6 +22,10 @@
 # Created 8/16/2016, this version created 1/10/2017
 # Sam Westreich, stwestreich@ucdavis.edu, github.com/transcript
 #
+# DIAMON_analysis_counter_mp.py
+# Created 10/03/2023, this version create 02/05/2023
+# Edward Yang, yang.e@wehi.edu.au, github.com/edoyango
+#
 # This program parses through the results file from a DIAMOND annotation run
 # (in BLAST m8 format) to get the results into something more compressed
 # and readable.
@@ -37,6 +41,7 @@
 # -R		reference		returns reference IDs in results
 # -SO		specific org	creates a separate outfile for results that hit
 #							a specific organism
+# -t            number of processes     specifies the number of processes to use
 #
 ##########################################################################
 
@@ -75,6 +80,9 @@ if "-t" in sys.argv:
 	threads = string_find("-t")
 else:
 	threads = 1
+	
+if "-SO" in sys.argv or "-R" in sys.argv:
+	sys.exit("This functionality hasn't been implemented yet.")
 
 infile = open (infile_name, "r")
 
