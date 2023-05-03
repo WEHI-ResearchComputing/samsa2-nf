@@ -61,9 +61,9 @@ nextfow run samsa2-master.nf
 
 ## Modifications from original
 
-`DIAMOND_analysis_counter_mp.py` is modified from the original SAMSA2 pipeline. It's modified to make use of Python's `multiprocessing` module. Number of processes is set with `-t <no. of processes>` option. Currently, this produces identical results to the original in `-O` and `-F` mode (used in the original master script), but not `-R` and `-SO` mode.
+`DIAMOND_analysis_counter_mp.py` is modified from the original SAMSA2 pipeline. It's modified to make use of Python's `multiprocessing` module. Number of processes is set with `-t <no. of processes>` option. Currently, this produces identical results to the original in `-O` and `-F` mode (used in the original master script), and should produce the correct results for `-R`, but this hasn't been verified. `-SO` mode has not been checked either.
 
-The DIAMOND blastx step has the `-b 12` and `-c 1` [performance options](https://github.com/bbuchfink/diamond/wiki/3.-Command-line-options#memory--performance-options) added. These decrease the number of blocks and decrease the number of chunks from the default. Both of these changes have the net effect of increasing memory usage *substantially*, but reducing run times *substantially*. The maximum observed memory usage is 170GB, which Milton's nodes can easily satisfy, but may be problematic on other hardware.
+The DIAMOND blastx step has the `-b 12` and `-c 1` [performance options](https://github.com/bbuchfink/diamond/wiki/3.-Command-line-options#memory--performance-options) added. Respectively, these increase the number of block size and decrease the number of chunks from the default. Both of these changes have the net effect of increasing memory usage *substantially*, but reducing run times *substantially*. The maximum observed memory usage is 170GB, which Milton's nodes can easily satisfy, but may be problematic on other hardware.
 
 The DIAMOND blastx step is also making use of `/vast/scratch/users/$USER/tmp`. This should be parameterised in the future.
 
