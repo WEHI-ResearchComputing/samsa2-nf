@@ -21,7 +21,7 @@ process TRIMMOMATIC {
     cpus 6
     memory '12 GB'
     publishDir step_1_output_dir, mode: 'copy'
-    module 'trimmomatic'
+    module 'trimmomatic/0.36'
 
     input:
     tuple val(sample_id), path(reads)
