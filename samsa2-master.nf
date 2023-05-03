@@ -225,7 +225,6 @@ process SUBSYS_REDUCER {
 
 workflow {
 
-
     infiles_ch = Channel.fromPath(input_files)
 
     Channel
@@ -236,11 +235,9 @@ workflow {
 
     pear_ch = PEAR(trim_ch)
 
-    forward_reads_ch = trim_ch.map{it[1]}.collect(flat: false)
-    raw_counts_ch = RAWREADCOUNT(forward_reads_ch)
+    raw_counts_ch = trim_ch.map{it[1]}.collect(flat: false) | RAWREADCOUNT
 
-    sortmerna_input_ch = pear_ch.map{[it[0],it[1]]}
-    sortmerna_ch = SORTMERNA(sortmerna_input_ch)
+    sortmerna_ch = pear_ch.map{[it[0],it[1]]} | SORTMERNA
 
     // REFSEQ
     diamond_refseq_ch = DIAMOND_REFSEQ(sortmerna_ch)
@@ -251,8 +248,6 @@ workflow {
 
     // SUBSYS
     diamond_subsys_ch = DIAMOND_SUBSYS(sortmerna_ch)
-    subsys_analysiscounter_input_ch = diamond_subsys_ch.map{[it[0],it[1]]}
-    subsys_analysiscounter_ch = SUBSYS_ANALYSIS_COUNTER(subsys_analysiscounter_input_ch)
-    subsys_reducer_input_ch = subsys_analysiscounter_ch.map{[it[0],it[1]]}
-    subsys_reducer_ch = SUBSYS_REDUCER(subsys_reducer_input_ch)
+    subsys_analysiscounter_ch = diamond_subsys_ch.map{[it[0],it[1]]} | SUBSYS_ANALYSIS_COUNTER
+    subsys_reducer_ch = subsys_analysiscounter_ch.map{[it[0],it[1]]} | SUBSYS_REDUCER
 }
