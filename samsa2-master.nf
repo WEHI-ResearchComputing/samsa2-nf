@@ -31,7 +31,15 @@ process TRIMMOMATIC {
 
     script:
     """
-    trimmomatic PE -phred33 -threads $task.cpus "$reads" ${sample_id}.cleaned.forward ${sample_id}.cleaned.forward_unpaired ${sample_id}.cleaned.reverse ${sample_id}.cleaned.reverse_unpaired SLIDINGWINDOW:4:15 MINLEN:70
+    trimmomatic PE \
+        -phred33 \
+        -threads $task.cpus \
+        "$reads" \
+        ${sample_id}.cleaned.forward \
+        ${sample_id}.cleaned.forward_unpaired \
+        ${sample_id}.cleaned.reverse \
+        ${sample_id}.cleaned.reverse_unpaired \
+        SLIDINGWINDOW:4:15 MINLEN:70
     """
 
 }
@@ -51,7 +59,10 @@ process PEAR {
 
     script:
     """
-    pear -f $reads_cleaned_forward -r $reads_cleaned_reverse -j $task.cpus -o ${sample_id}.merged 2>&1 | tee ${sample_id}.merged.assembled.fastq.ribosomes.log
+    pear --forward-fastq $reads_cleaned_forward \
+         --reverse-fastq $reads_cleaned_reverse \
+         --threads $task.cpus \
+         --output ${sample_id}.merged 2>&1 | tee ${sample_id}.merged.assembled.fastq.ribosomes.log
     """
 }
 
@@ -70,7 +81,10 @@ process RAWREADCOUNT {
 
     script:
     """
-    for infile in $input_forward_reads; do python $params.python_scripts/raw_read_counter.py -I \$infile -O raw_counts.txt; done
+    for infile in $input_forward_reads
+    do 
+        python $params.python_scripts/raw_read_counter.py -I \$infile -O raw_counts.txt
+    done
     """
 
 }
@@ -115,8 +129,21 @@ process DIAMOND_REFSEQ {
 
     script:
     """
-    ${params.programs}/diamond blastx --db $params.diamond_database -q $ribodepleted_fastq -a ${ribodepleted_fastq}.RefSeq -t /vast/scratch/users/\$USER/tmp -k 1 -p $task.cpus -b 12 -c 1
-    ${params.programs}/diamond view --daa ${ribodepleted_fastq}.RefSeq.daa -o ${sample_id}.merged.RefSeq_annotated -f tab -p $task.cpus
+    ${params.programs}/diamond blastx \
+        --db $params.diamond_database \
+        --query $ribodepleted_fastq \
+        --daa ${ribodepleted_fastq}.RefSeq \
+        --tmpdir /vast/scratch/users/\$USER/tmp \
+        --max-target-seqs 1 \
+        --threads $task.cpus \
+        --block-size 12 \
+        --index-chunks 1
+
+    ${params.programs}/diamond view \
+        --daa ${ribodepleted_fastq}.RefSeq.daa \
+        --out ${sample_id}.merged.RefSeq_annotated \
+        --outfmt tab \
+        --threads $task.cpus
     """
 
 }
@@ -135,8 +162,21 @@ process DIAMOND_SUBSYS {
 
     script:
     """
-    ${params.programs}/diamond blastx --db $params.subsys_database -q $ribodepleted_fastq -a ${ribodepleted_fastq}.Subsys -t /vast/scratch/users/\$USER/tmp -k 1 -p $task.cpus -b 12 -c 1
-    ${params.programs}/diamond view --daa ${ribodepleted_fastq}.Subsys.daa -o ${sample_id}.merged.Subsys_annotated -f tab -p $task.cpus
+    ${params.programs}/diamond blastx \
+        --db $params.subsys_database \
+        --query $ribodepleted_fastq \
+        --daa ${ribodepleted_fastq}.Subsys \
+        --tmpdir /vast/scratch/users/\$USER/tmp \
+        --max-target-seqs 1 \
+        --threads $task.cpus \
+        --block-size 12 \
+        --index-chunks 1
+
+    ${params.programs}/diamond view \
+        --daa ${ribodepleted_fastq}.Subsys.daa \
+        --out ${sample_id}.merged.Subsys_annotated \
+        --outfmt tab \
+        --threads $task.cpus
     """
 
 
