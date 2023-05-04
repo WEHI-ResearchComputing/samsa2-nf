@@ -120,6 +120,7 @@ process DIAMOND_REFSEQ {
     cpus 70
     memory '170 GB'
     publishDir "${step_4_output_dir}/RefSeq_results", mode: 'copy'
+    container 'quay.io/biocontainers/diamond:0.8.36--h2e03b76_5'
 
     input:
     tuple val(sample_id), path(ribodepleted_fastq)
@@ -129,17 +130,17 @@ process DIAMOND_REFSEQ {
 
     shell:
     '''
-    !{params.programs}/diamond blastx \
+    diamond blastx \
         --db !{params.diamond_database} \
         --query !{ribodepleted_fastq} \
         --daa !{ribodepleted_fastq}.RefSeq \
-        --tmpdir /vast/scratch/users/$USER/tmp \
+        --tmpdir . \
         --max-target-seqs 1 \
         --threads !task.cpus \
         --block-size 12 \
         --index-chunks 1
 
-    !{params.programs}/diamond view \
+    diamond view \
         --daa !{ribodepleted_fastq}.RefSeq.daa \
         --out !{sample_id}.merged.RefSeq_annotated \
         --outfmt tab \
