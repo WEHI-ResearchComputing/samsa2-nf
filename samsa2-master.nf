@@ -22,6 +22,7 @@ process TRIMMOMATIC {
     memory '12 GB'
     publishDir step_1_output_dir, mode: 'copy'
     module 'trimmomatic/0.36'
+    container 'quay.io/biocontainers/trimmomatic:0.36--6'
 
     input:
     tuple val(sample_id), path(reads)
@@ -50,6 +51,7 @@ process PEAR {
     memory '1 GB'
     publishDir step_2_output_dir, mode: 'copy'
     module 'pear/0.9.11'
+    container 'quay.io/biocontainers/pear:0.9.6--h67092d7_8'
 
     input:
     tuple val(sample_id), path(reads_cleaned_forward), path(reads_cleaned_reverse)
@@ -94,6 +96,7 @@ process SORTMERNA {
     cpus 24
     memory '2 GB'
     publishDir step_3_output_dir, mode: 'copy'
+    container 'quay.io/biocontainers/sortmerna:2.1b--0'
 
     input:
     tuple val(sample_id), path(assembled_fastq)
@@ -103,7 +106,7 @@ process SORTMERNA {
 
     shell:
     """
-    !{params.programs}/sortmerna-2.1/sortmerna \
+    sortmerna \
         -a !{task.cpus} \
         --ref !{params.programs}/sortmerna-2.1/rRNA_databases/silva-bac-16s-id90.fasta,!{params.programs}/sortmerna-2.1/index/silva-bac-16s-db \
         --reads !{assembled_fastq} \
@@ -152,8 +155,9 @@ process DIAMOND_REFSEQ {
 process DIAMOND_SUBSYS {
 
     cpus 24
-    memory '170 GB'
+    memory '64 GB'
     publishDir "${step_4_output_dir}/Subsystems_results", mode: 'copy'
+    container 'quay.io/biocontainers/diamond:0.8.36--h2e03b76_5'
 
     input:
     tuple val(sample_id), path(ribodepleted_fastq)
@@ -163,17 +167,17 @@ process DIAMOND_SUBSYS {
 
     shell:
     '''
-    !{params.programs}/diamond blastx \
+    diamond blastx \
         --db !{params.subsys_database} \
         --query !{ribodepleted_fastq} \
         --daa !{ribodepleted_fastq}.Subsys \
-        --tmpdir /vast/scratch/users/$USER/tmp \
+        --tmpdir . \
         --max-target-seqs 1 \
         --threads !{task.cpus} \
         --block-size 12 \
         --index-chunks 1
 
-    !{params.programs}/diamond view \
+    diamond view \
         --daa !{ribodepleted_fastq}.Subsys.daa \
         --out !{sample_id}.merged.Subsys_annotated \
         --outfmt tab \
