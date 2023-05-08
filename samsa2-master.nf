@@ -4,16 +4,22 @@ params.input_dir = "$projectDir/input_files"
 params.python_scripts = "$projectDir/python_scripts"
 params.programs = "$projectDir/programs"
 params.diamond_database = "$projectDir/full_databases/New_Bac_Vir_Arc_RefSeq"
-refseq_db = "${params.diamond_database}.fa"
 params.subsys_database = "$projectDir/full_databases/subsys_db"
 params.output_dir = "$projectDir/output_files"
-step_1_output_dir = "$params.output_dir/step_1_output"
-step_2_output_dir = "$params.output_dir/step_2_output"
-step_3_output_dir = "$params.output_dir/step_3_output"
-step_4_output_dir = "$params.output_dir/step_4_output"
-step_5_output_dir = "$params.output_dir/step_5_output"
 
-input_files = "${params.input_dir}/*_R{1,2}_*" // match everything else
+f_input_dir = file(params.input_dir)
+f_python_scripts = file(params.python_scripts)
+f_programs = file(params.programs)
+f_refseq_db = file("${params.diamond_database}.fa")
+f_output_dir = file(params.output_dir)
+step_1_output_dir = f_output_dir / "step_1_output"
+step_2_output_dir = f_output_dir / "step_2_output"
+step_3_output_dir = f_output_dir / "step_3_output"
+step_5_output_dir = f_output_dir / "step_5_output"
+step_4_output_dir = f_output_dir / "step_4_output"
+
+// match input files
+input_files = f_input_dir / "*_R{1,2}*"
 
 // step 1
 process TRIMMOMATIC {
@@ -119,7 +125,7 @@ process DIAMOND_REFSEQ {
 
     cpus 70
     memory '170 GB'
-    publishDir "${step_4_output_dir}/RefSeq_results", mode: 'copy'
+    publishDir step_4_output_dir / "RefSeq_results", mode: 'copy'
 
     input:
     tuple val(sample_id), path(ribodepleted_fastq)
@@ -152,7 +158,7 @@ process DIAMOND_SUBSYS {
 
     cpus 24
     memory '170 GB'
-    publishDir "${step_4_output_dir}/Subsystems_results", mode: 'copy'
+    publishDir step_4_output_dir / "Subsystems_results", mode: 'copy'
 
     input:
     tuple val(sample_id), path(ribodepleted_fastq)
@@ -186,7 +192,7 @@ process REFSEQ_ANALYSISCOUNTER_FUNC {
 
     cpus 46
     memory '64 GB'
-    publishDir "${step_5_output_dir}/RefSeq_results/func_results", mode: 'copy'
+    publishDir step_5_output_dir / "RefSeq_results" / "func_results", mode: 'copy'
 
     input:
     tuple val(sample_id), path(refseq_annotated)
@@ -208,7 +214,7 @@ process REFSEQ_ANALYSISCOUNTER_ORG {
 
     cpus 46
     memory '64 GB'
-    publishDir "${step_5_output_dir}/RefSeq_results/org_results", mode: 'copy'
+    publishDir step_5_output_dir / "RefSeq_results" / "org_results", mode: 'copy'
 
     input:
     tuple val(sample_id), path(refseq_annotated)
@@ -230,7 +236,7 @@ process SUBSYS_ANALYSIS_COUNTER {
 
     cpus 1
     memory '4 GB'
-    publishDir "${step_5_output_dir}/Subsystems_results/receipts", pattern: '*.receipt', mode: 'copy'
+    publishDir step_5_output_dir / "Subsystems_results" / "receipts", pattern: '*.receipt', mode: 'copy'
 
     input:
     tuple val(sample_id), path(subsys_annotated)
@@ -253,7 +259,7 @@ process SUBSYS_REDUCER {
 
     cpus 1
     memory '1 GB'
-    publishDir "${step_5_output_dir}/Subsystems_results", mode: 'copy'
+    publishDir step_5_output_dir / "Subsystems_results", mode: 'copy'
 
     input:
     tuple val(sample_id), path(subsys_annotated_hierarchy)
